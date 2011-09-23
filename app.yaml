@@ -9,6 +9,7 @@ skip_files:
 - flash/.*
 - .*\.git.*
 - .*\.less.*
+- .*js/(.+packaged\.js|.+(?<!packaged)\.js)
 
 handlers:
 - url: /assets
