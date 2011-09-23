@@ -8,6 +8,7 @@ default_expiration: '30d'
 skip_files:
 - flash/.*
 - .*\.git.*
+- .*\.less.*
 
 handlers:
 - url: /assets
