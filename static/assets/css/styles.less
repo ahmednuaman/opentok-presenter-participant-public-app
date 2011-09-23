@@ -1,6 +1,21 @@
 // Import bootstrap
 @import "bootstrap.less";
 
+.absolute
+{
+	position: absolute;
+	display: block;
+}
+.fixed
+{
+	position: fixed;
+	display: block;
+}
+.top
+{
+	z-index: 2147483647;
+}
+
 #badbrowser,
 #no-js
 {
@@ -16,6 +31,21 @@
 #no-js
 {
 	.hide;
+}
+#loader
+{
+	.fixed;
+	.top;
+	width: 100%;
+	height: 100%;
+	background: #ffffff;
+	
+	#loader-inner
+	{
+		.absolute;
+		width: 30px;
+		height: 30px;
+	}
 }
 
 .no-js
