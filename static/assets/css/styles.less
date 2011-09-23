@@ -1,7 +1,8 @@
 // Import bootstrap
 @import "bootstrap.less";
 
-#badbrowser
+#badbrowser,
+#no-js
 {
 	margin: 20px auto;
 	max-width: 960px;
@@ -10,5 +11,22 @@
 	.alert-actions
 	{
 		margin: 20px 0;
+	}
+}
+#no-js
+{
+	.hide;
+}
+
+.no-js
+{
+	#badbrowser,
+	#container
+	{
+		.hide;
+	}
+	#no-js
+	{
+		.show;
 	}
 }

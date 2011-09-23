@@ -1,9 +1,11 @@
 var S	= {
 	ready														: function()
 	{
+		$( 'html' ).removeClass( 'no-js' );
+		
 		if ( S.checkEventSource() )
 		{
-			//$( '#badbrowser' ).remove();
+			$( '#badbrowser' ).remove();
 		}
 		else
 		{
