@@ -9,6 +9,7 @@ skip_files:
 - flash/.*
 - .*\.git.*
 - .*\.less.*
+- .*\.sh.*
 - .*js/(.+packaged\.js|.+(?<!packaged)\.js)
 
 handlers:
