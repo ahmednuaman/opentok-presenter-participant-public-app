@@ -2,7 +2,7 @@ eval(function(p,a,c,k,e,d){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a
 // the styles
 var cl = new CanvasLoader('loader-inner');
 cl.setShape('roundedRectangle'); // default is 'circle'
-cl.setDiameter(30); //default is 40
+cl.setDiameter(40); //default is 40
 cl.setDensity(12); //default is 40
 cl.setSpeed(10); //default is 2
 cl.setFPS(11); //default is 24

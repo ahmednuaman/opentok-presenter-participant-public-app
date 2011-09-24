@@ -8,8 +8,10 @@ from django.utils import simplejson
 from google.appengine.ext import webapp
 
 class APIController(webapp.RequestHandler):
-    def post(self):
+    def get(self):
+        self.response.headers[ 'content-type' ] = 'text/event-stream'
         
+        self.response.out.write( 'shit' );
     
 
 def error(s):

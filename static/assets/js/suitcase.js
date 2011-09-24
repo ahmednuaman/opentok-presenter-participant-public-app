@@ -1,11 +1,16 @@
 var S	= {
+	apiKey														: '4901211',
 	resizeFunctions												: [ ],
+	session														: '',
+	sessionId													: '3b0c7ef2b12a4e194afb06000c2f6c75',
+	streams														: [ ],
+	tokenId														: 'devtoken',
 	
 	ready														: function()
 	{
 		$( 'html' ).removeClass( 'no-js' );
 		
-		if ( S.checkEventSource() )
+		if ( S.checkEventSource() && TB.checkSystemRequirements() === TB.HAS_REQUIREMENTS )
 		{
 			$( '#badbrowser' ).remove();
 		}
@@ -15,10 +20,11 @@ var S	= {
 		}
 		
 		S.setupLoader();
+		S.setupListener();
 		
 		$( window ).resize( S.windowResize ).resize();
 		
-		//S.hideLoader();
+		S.hideLoader();
 	},
 	
 	windowResize												: function(e)
@@ -65,6 +71,79 @@ var S	= {
 	showLoader													: function()
 	{
 		$( '#loader' ).stop( true ).fadeOut();
+	},
+	
+	setupListener												: function()
+	{
+		var s	= new EventSource( '/api' );
+		
+		s.onopen	= function(e)
+		{
+			console.log(e);
+		};
+		
+		s.onmessage	= function(e)
+		{
+			console.log(e.data);
+			
+			// var	n	= S.streams.length === 0;
+			// 			
+			// 			S.streams	= JSON.parse( e.data );
+			// 			
+			// 			if ( n )
+			// 			{
+			// 				S.setupSession();
+			// 			}
+		};
+	},
+	
+	setupSession												: function()
+	{
+		S.session	= TB.initSession( S.sessionId );
+		
+		S.session.addEventListener( 'sessionConnected', 	S.sessionConnectedHandler );
+		S.session.addEventListener( 'sessionDisconnected', 	S.sessionDisconnectedHandler );
+		S.session.addEventListener( 'connectionCreated', 	S.connectionCreatedHandler );
+		S.session.addEventListener( 'connectionDestroyed', 	S.connectionDestroyedHandler );
+		S.session.addEventListener( 'streamCreated', 		S.streamCreatedHandler );
+		S.session.addEventListener( 'streamDestroyed', 		S.streamDestroyedHandler );
+		
+		S.session.connect( S.apiKey, S.tokenId );
+	},
+	
+	sessionConnectedHandler										: function(e)
+	{
+		// for ( var i = 0; i < e.streams.length; i++ ) 
+		// 		{
+		// 			S.addStream( e.streams[ i ] );
+		// 		}
+		S.session.subscribe( e.streams[ S.streams[ 0 ] ], 'stream-presenter' );
+		S.session.subscribe( e.streams[ S.streams[ 1 ] ], 'stream-participant' );
+	},
+	
+	sessionDisconnectedHandler									: function(e)
+	{
+		
+	},
+	
+	connectionCreatedHandler									: function(e)
+	{
+		
+	},
+	
+	connectionDestroyedHandler									: function(e)
+	{
+		
+	},
+	
+	streamCreatedHandler										: function(e)
+	{
+		
+	},
+	
+	streamDestroyedHandler										: function(e)
+	{
+		
 	}
 };
 
