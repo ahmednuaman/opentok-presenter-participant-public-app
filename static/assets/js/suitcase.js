@@ -1,5 +1,7 @@
 var S	= {
 	apiKey														: '4901211',
+	channel														: '',
+	channelId													: '',
 	resizeFunctions												: [ ],
 	session														: '',
 	sessionId													: '3b0c7ef2b12a4e194afb06000c2f6c75',
@@ -75,26 +77,27 @@ var S	= {
 	
 	setupListener												: function()
 	{
-		var s	= new EventSource( '/api' );
-		
-		s.onopen	= function(e)
+		$.post( '/api', function(d)
 		{
-			console.log(e);
-		};
-		
-		s.onmessage	= function(e)
-		{
-			console.log(e.data);
+			S.channelId	= d;
 			
-			// var	n	= S.streams.length === 0;
-			// 			
-			// 			S.streams	= JSON.parse( e.data );
-			// 			
-			// 			if ( n )
-			// 			{
-			// 				S.setupSession();
-			// 			}
-		};
+			var channel	= new goog.appengine.Channel( S.channelId );
+			
+			S.channel	= channel.open();
+			
+			S.channel.onopen	= S.channelOpen;
+			S.channel.onmessage	= S.channelMessage;
+		});
+	},
+	
+	channelOpen													: function(e)
+	{
+		console.log(e);
+	},
+	
+	channelMessage												: function(e)
+	{
+		console.log(e);
 	},
 	
 	setupSession												: function()

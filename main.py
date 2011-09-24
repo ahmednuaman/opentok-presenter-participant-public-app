@@ -8,7 +8,7 @@ from google.appengine.ext.webapp import util
 
 def main():
     application = webapp.WSGIApplication( [
-        ( '/api',   api_controller.APIController )
+        ( '/api', api_controller.APIController )
     ], debug=True )
     util.run_wsgi_app( application )
 

@@ -1,17 +1,24 @@
 #!/usr/bin/env python
 
-import logging
-import re
 import sys
+import uuid
 
+from app.model import channel_model
 from django.utils import simplejson
+from google.appengine.api import channel
 from google.appengine.ext import webapp
 
 class APIController(webapp.RequestHandler):
     def get(self):
-        self.response.headers[ 'content-type' ] = 'text/event-stream'
+        self.response.out.write('shit')
+    
+    def post(self):
+        i   = str( uuid.uuid4() )
+        t   = channel.create_channel( i )
         
-        self.response.out.write( 'shit' );
+        channel_model.add_channel( t )
+        
+        self.response.out.write( t )
     
 
 def error(s):
