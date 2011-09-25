@@ -67,15 +67,36 @@
 			{% endif %}
 		</div>
 		{% if logged_in %}
+			<!--<script src="https://www.tokbox.com/v0.91/js/TB.min.js"></script>-->
+			<script src="https://staging.tokbox.com/v0.91/js/TB.min.js"></script>
 			<script src="/assets/js/jquery-core.js"></script>
 			<script src="/assets/js/jquery-ui.js"></script>
 			<script>
 			<!--
 				var apiKey		= '{{ config.api_key }}';
-				var sessionId	= '{{ config.session_id }}';
+				var sessionId	= '{{ session_id }}';
 				var token		= '{{ token }}';
 				
+				token			= 'moderator_token';
+				
 				TB.setLogLevel( TB.DEBUG );
+				
+				var session = TB.initSession( sessionId );    
+				  
+				session.addEventListener( 'sessionConnected', sessionConnectedHandler );
+				session.addEventListener( 'streamCreated', streamCreatedHandler );   
+				   
+				session.connect( apiKey, token );
+				
+				function sessionConnectedHandler(e)
+				{
+					console.log(e);
+				}
+				
+				function streamCreatedHandler(e)
+				{
+					console.log(e);
+				}
 			-->
 			</script>
 		{% endif %}

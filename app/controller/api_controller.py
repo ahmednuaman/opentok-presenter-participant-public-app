@@ -76,7 +76,7 @@ class LoginController(webapp.RequestHandler):
             
             self.request.cookies[ COOKIE_NAME ] = 1 if l else 0
         
-        load( self, { 'error': e, 'logged_in': l, 'token': t, 'config': c } )
+        load( self, { 'error': e, 'logged_in': l, 'token': t, 'session_id': s.session_id, 'config': c } )
     
 
 def config():
