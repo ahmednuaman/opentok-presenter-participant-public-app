@@ -19,6 +19,10 @@
 					Hope you're sitting comfortably cos all these lovely people below would like to chat with you.
 				</h3>
 				<p>
+					This is your current web cam feed, smile:
+				</p>
+				<div id="christy-webcam"></div>
+				<p>
 					We've added their scheduled times, but you're in control so feel free to select whomever you want to chat to:
 				</p>
 				<ul class="media-grid">
@@ -67,7 +71,11 @@
 			<script src="/assets/js/jquery-ui.js"></script>
 			<script>
 			<!--
-			
+				var apiKey		= '{{ config.api_key }}';
+				var sessionId	= '{{ config.session_id }}';
+				var token		= '{{ token }}';
+				
+				TB.setLogLevel( TB.DEBUG );
 			-->
 			</script>
 		{% endif %}
