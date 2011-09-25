@@ -36,9 +36,14 @@ class PresenterController(webapp.RequestHandler):
         
         msg = None
         
-        if req is 'set_streams':
+        if req == 'set_streams':
             msg = simplejson.loads( self.request.get( 'streams' ) )
-        
+            
+        elif req == 'connected':
+            stream_model.add_stream( self.request.get( 'session_id' ), True, True )
+            
+            msg = True
+            
         if msg is not None:
             msg = simplejson.dumps( msg )
             

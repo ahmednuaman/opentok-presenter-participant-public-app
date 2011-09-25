@@ -3,13 +3,19 @@
 from google.appengine.ext import db
 
 class StreamModel(db.Model):
-    stream  = db.StringProperty()
-    active  = db.BooleanProperty(default=False)
+    stream      = db.StringProperty()
+    active      = db.BooleanProperty(default=False)
+    presenter   = db.BooleanProperty(default=False)
 
-def add_stream(s):
+def add_stream(s, a=True, p=False):
     m   = StreamModel()
     
     m.stream    = s
+    m.active    = a
+    m.presenter = p
+    
+    if p:
+        delete_current_presenter()
     
     m.put()
 
@@ -45,3 +51,10 @@ def update_stream(s, a):
     s.active    = a
     
     s.put()
+
+def delete_current_presenter():
+    q   = StreamModel().gql( 'WHERE presenter = :1', True ).get()
+    
+    if q is not None:
+        q.delete()
+    

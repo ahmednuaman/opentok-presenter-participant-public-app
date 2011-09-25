@@ -76,6 +76,7 @@
 				var apiKey		= '{{ config.api_key }}';
 				var sessionId	= '{{ session_id }}';
 				var token		= '{{ token }}';
+				var stream;
 				
 				token			= 'moderator_token';
 				
@@ -90,12 +91,20 @@
 				
 				function sessionConnectedHandler(e)
 				{
-					console.log(e);
+					steam	= session.publish( 'christy-webcam' );
 				}
 				
 				function streamCreatedHandler(e)
 				{
-					console.log(e);
+					$.postAJAX( { method: 'connected', session_id: sessionId }, function(d)
+					{
+						
+					});
+				}
+				
+				$.postAJAX	= function(d, c)
+				{
+					$.post( '/api/presenter', d, c, 'json' );
 				}
 			-->
 			</script>
