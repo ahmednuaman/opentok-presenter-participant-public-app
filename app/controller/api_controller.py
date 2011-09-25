@@ -13,13 +13,6 @@ from google.appengine.api import channel
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 
-COOKIE_NAME         = 'FLokfGUUiprgVdCUHSKZvxb8qV5yWVjA0WS3z6UXJliYCXRAsSoJJ4BCi6GcTZb'
-PRE_PASSWORD        = 'mklohyzaxiW9VMIi1hTLmRoX8tL3bPU4bQIoAjyHH9Ih6GaBtUpymkFR49yO4qd'
-PRE_USERNAME        = 'Christy'
-ROLE_PRESENTER      = 'MODERATOR'
-ROLE_PARTICIPANT    = 'PUBLISHER'
-ROLE_PUBLIC         = 'SUBSCRIBER'
-
 class PublicController(webapp.RequestHandler):
     def post(self):
         i   = str( uuid.uuid4() )
@@ -68,26 +61,26 @@ class LoginController(webapp.RequestHandler):
         t   = ''
         
         if pre:
-            if self.request.get( 'username' ) == PRE_USERNAME and self.request.get( 'password' ) == PRE_PASSWORD:
+            if self.request.get( 'username' ) == c.pre.username and self.request.get( 'password' ) == c.pre.password:
                 l   = True
                 
-                sdk = opentok_helper.OpenTokSDK( c[ 'api_key' ], c[ 'secret' ] )
+                sdk = opentok_helper.OpenTokSDK( c.tokbox.api_key, c.tokbox.secret )
                 
                 s   = sdk.create_session( self.request.url )
-                t   = sdk.generate_token( s.session_id, ROLE_PRESENTER, PRE_USERNAME )
+                t   = sdk.generate_token( s.session_id, c.role.presenter, c.pre.username )
                 
             else:
                 e   = True
             
-            self.request.cookies[ COOKIE_NAME ] = 1 if l else 0
+            self.request.cookies[ c.cookie_name ] = 1 if l else 0
         
-        load( self, { 'error': e, 'logged_in': l, 'token': t, 'session_id': s.session_id, 'config': c } )
+        load( self, { 'error': e, 'logged_in': l, 'token': t, 'session_id': s.session_id, 'config': c.tokbox } )
     
 
 def config():
     c   = config_helper.config()
     
-    return c[ 'tokbok' ]
+    return c
 
 def pre_or_part(s, t, f):
     return t if s.request.path == '/presenter/login' else f
