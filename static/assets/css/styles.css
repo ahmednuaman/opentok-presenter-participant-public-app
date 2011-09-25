@@ -331,9 +331,11 @@ button.btn::-moz-focus-inner,input[type=submit].btn::-moz-focus-inner{padding:0;
 .absolute{position:absolute;display:block;}
 .fixed{position:fixed;display:block;}
 .top{z-index:2147483647;}
-#container,#badbrowser,#no-js{margin:20px auto;}
+#container,#badbrowser,#no-js,#login{margin:20px auto;}
+#container{margin:20px;}
 #badbrowser,#no-js{max-width:960px;min-width:500px;}#badbrowser .alert-actions,#no-js .alert-actions{margin:20px 0;}
 #no-js{display:none;}
 #loader{position:fixed;display:block;z-index:2147483647;width:100%;height:100%;background:#ffffff;}#loader #loader-inner{position:absolute;display:block;width:40px;height:40px;}
+#login{width:400px;}
 .no-js #badbrowser,.no-js #container{display:none;}
 .no-js #no-js{display:block;}

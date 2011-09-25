@@ -8,7 +8,11 @@ from google.appengine.ext.webapp import util
 
 def main():
     application = webapp.WSGIApplication( [
-        ( '/api', api_controller.APIController )
+        ( '/api/public', api_controller.PublicController ),
+        ( '/api/presenter', api_controller.PresenterController ),
+        ( '/api/participant', api_controller.ParticipantController ),
+        ( '/presenter/login', api_controller.LoginController ),
+        ( '/participant/login', api_controller.LoginController )
     ], debug=True )
     util.run_wsgi_app( application )
 

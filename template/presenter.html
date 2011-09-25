@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+		<meta name="description" content="" />
+		<meta name="author" content="" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link type="text/css" rel="stylesheet" href="/assets/css/styles.css" />
+		<title>{% if logged_in %}Admin{% else %}Log in{% endif %}</title>
+	</head>
+	<body>
+		<div id="container">
+			{% if logged_in %}
+				<h1>
+					Hello Christy!
+				</h1>
+				<h3>
+					Hope you're sitting comfortably cos all these lovely people below would like to chat with you.
+				</h3>
+				<p>
+					We've added their scheduled times, but you're in control so feel free to select whomever you want to chat to:
+				</p>
+				<ul class="media-grid">
+					
+				</ul>
+			{% else %}
+				<div id="login">
+					{% if error %}
+						<div class="alert-message error">
+							<p>
+								<strong>Sorry but those details are incorrect!</strong>
+							</p>
+						</div>
+					{% endif %}
+					<form action="/presenter/login" method="post">
+						<fieldset>
+							<legend>
+								Please log in
+							</legend>
+							<div class="clearfix">
+								<label for="username">
+									Username
+								</label>
+								<div class="input">
+									<input name="username" id="username" type="password" placeholder="Username" />
+								</div>
+							</div>
+							<div class="clearfix">
+								<label for="password">
+									Password
+								</label>
+								<div class="input">
+									<input name="password" id="password" type="password" placeholder="Password" />
+								</div>
+							</div>
+							<div class="actions">
+								<input type="submit" value="Log in" class="btn primary" />
+							</div>
+						</fieldset>
+					</form>
+				</div>
+			{% endif %}
+		</div>
+		{% if logged_in %}
+			<script src="/assets/js/jquery-core.js"></script>
+			<script src="/assets/js/jquery-ui.js"></script>
+			<script>
+			<!--
+			
+			-->
+			</script>
+		{% endif %}
+	</body>
+</html>

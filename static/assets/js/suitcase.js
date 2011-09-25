@@ -92,7 +92,7 @@ var S	= {
 	
 	channelOpen													: function(e)
 	{
-		console.log(e);
+		S.setupSession();
 	},
 	
 	channelMessage												: function(e)
