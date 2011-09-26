@@ -78,7 +78,6 @@
 				var sessionId	= '{{ session_id }}';
 				var token		= '{{ token }}';
 				var props		= {{ config.props }};
-				var currentStreams;
 				var stream;
 				var streams;
 				
@@ -99,16 +98,17 @@
 					streams	= e.streams;
 					
 					session.publish( 'presenter-webcam', props );
+					
+					updateStreams();
 				}
 				
 				function streamCreatedHandler(e)
 				{
-					var l;
-					var s;
+					var s	= e.streams[ 0 ];
 					
 					if ( !connected )
 					{
-						stream	= e.streams[ 0 ];
+						stream	= s;
 						
 						$.postAJAX( { method: 'connected', stream_id: stream.streamId }, function(d)
 						{
@@ -120,40 +120,30 @@
 					}
 					else
 					{
-						streams.push( e.streams[ 0 ] );
+						streams.push( s );
+						
+						addStream( s );
 					}
-					
-					updateStreams();
 				}
 				
 				function streamDestroyedHandler(e)
 				{
 					var d	= e.streams[ 0 ].streamId;
 					
-					console.log(streams);
-					
 					streams	= streams.filter( function(s)
 					{
 						return s.streamId != d;
 					});
 					
-					console.log(streams);
+					session.unsubscribe( e.streams[ 0 ] );
 					
-					updateStreams();
+					console.log($( '#stream' + d  ),$( '#stream' + d  ).parents('li').eq(0))
+					
+					$( '#stream' + d  ).parents( 'li' ).eq( 0 ).remove();
 				}
 				
 				function updateStreams()
 				{
-					if ( currentStreams )
-					{
-						$.each( currentStreams, function()
-						{
-							session.unsubscribe( this );
-						});
-					}
-					
-					currentStreams	= [ ];
-					
 					$( '#streams' ).empty();
 					
 					$.each( streams, function()
@@ -163,15 +153,17 @@
 							return;
 						}
 						
-						var id	= 'stream' + this.streamId;
-						var s	= this;
-						
-						$( '#streams' ).append( '<li><div id="' + id + '"></div><br /><a href="javascript:selectStream(\'' + this.streamId + '\')" class="btn">Select</a></li>' );
-						
-						session.subscribe( this, id, props );
-						
-						currentStreams.push( s );
+						addStream( this );
 					});
+				}
+				
+				function addStream(s)
+				{
+					var id	= 'stream' + s.streamId;
+					
+					$( '#streams' ).append( '<li><div id="' + id + '"></div><br /><a href="javascript:selectStream(\'' + s.streamId + '\')" class="btn">Select</a></li>' );
+					
+					session.subscribe( s, id, props );
 				}
 				
 				$.postAJAX	= function(d, c)
