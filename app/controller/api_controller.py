@@ -28,6 +28,12 @@ class PresenterController(webapp.RequestHandler):
         if sess.is_active() is False:
             error( 'Not authed' )
         
+        if sess.has_key( 'logged_in' ) is False:
+            error( 'Bad session' )
+        
+        if sess[ 'logged_in' ] is not True:
+            error( 'Not logged in' )
+        
         req = self.request.get( 'method' )
         
         msg = None
@@ -36,10 +42,17 @@ class PresenterController(webapp.RequestHandler):
             msg = simplejson.loads( self.request.get( 'streams' ) )
             
         elif req == 'connected':
-            stream_model.add_stream( self.request.get( 'session_id' ), True, True )
+            stream_model.delete_current_presenter()
+            
+            stream_model.add_stream( self.request.get( 'stream_id' ), True, True )
             
             msg = stream_model.get_streams()
             
+        
+        if req == 'connected' or req == 'update':
+            get_all_streams( self )
+            
+        
         if msg is not None:
             msg = simplejson.dumps( msg )
             
@@ -54,7 +67,7 @@ class ParticipantController(webapp.RequestHandler):
         msg = None
         
         if req == 'connected':
-            stream_model.add_stream( self.request.get( 'session_id' ) )
+            stream_model.add_stream( self.request.get( 'stream_id' ) )
             
             msg = create_channel()
             
@@ -77,17 +90,18 @@ class LoginController(webapp.RequestHandler):
         s   = ''
         t   = ''
         
+        
+        sess    = get_current_session()
+        
+        if sess.is_active():
+            sess.terminate()
+        
         if pre:
             if self.request.get( 'username' ) == c.pre.username and self.request.get( 'password' ) == c.pre.password:
                 l   = True
                 
             else:
                 e   = True
-            
-            sess    = get_current_session()
-            
-            if sess.is_active():
-                sess.terminate()
             
             if l:
                 sess[ 'logged_in' ] = True
@@ -113,10 +127,10 @@ class LoginController(webapp.RequestHandler):
         if l:
             sdk = opentok_helper.OpenTokSDK( c.tokbox.api_key, c.tokbox.secret )
             
-            s   = sdk.create_session( self.request.url ).session_id
-            t   = sdk.generate_token( s, c.role.presenter if pre else c.role.participant )
+            # s   = sdk.create_session( self.request.url ).session_id
+            t   = sdk.generate_token( c.tokbox.session_id, c.role.presenter if pre else c.role.participant )
         
-        d   = { 'error': e, 'logged_in': l, 'token': t, 'session_id': s, 'config': c.tokbox, 'email': '', 'time': '' }
+        d   = { 'error': e, 'logged_in': l, 'token': t, 'session_id': c.tokbox.session_id, 'config': c.tokbox, 'email': '', 'time': '' }
         
         if pre is False and l and part:
             d[ 'email' ]    = em
@@ -142,6 +156,9 @@ def create_channel():
     channel_model.add_channel( t )
     
     return t
+
+def get_all_streams(s):
+    s.response.out.write( simplejson.dumps( stream_model.get_all_streams() ) )
 
 def pre_or_part(s, t, f):
     return t if s.request.path == '/presenter/login' else f

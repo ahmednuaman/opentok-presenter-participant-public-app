@@ -7,7 +7,7 @@ class StreamModel(db.Model):
     active      = db.BooleanProperty(default=False)
     presenter   = db.BooleanProperty(default=False)
 
-def add_stream(s, a=True, p=False):
+def add_stream(s, a=False, p=False):
     m   = StreamModel()
     
     m.stream    = s
@@ -34,13 +34,21 @@ def get_stream(s):
     return q
 
 def get_streams():
-    q   = StreamModel().all()
+    q1  = StreamModel().gql( 'WHERE presenter = :1', True ).get()
+    q2  = StreamModel().gql( 'WHERE active = :1 and presenter = :2', True, False ).get()
+    
+    ss  = { 'presenter': q1.stream if q1 is not None else '', 'participant': q2.stream if q2 is not None else '' }
+    
+    return ss
+
+def get_all_streams():
+    q   = StreamModel().gql( 'WHERE presenter = :1', False ).fetch( 1000 )
     
     ss  = [ ]
     
     if q is not None:
         for s in q:
-            ss.append( { 'stream': s.stream, 'active': s.active } )
+            ss.append( s.stream )
         
     
     return ss

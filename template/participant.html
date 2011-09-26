@@ -21,7 +21,7 @@
 				</p>
 				<div class="row">
 					<div class="span8">
-						<div id="christy-webcam"></div>
+						<div id="presenter-webcam"></div>
 					</div>
 					<div class="span8">
 						<div id="participant-webcam"></div>
@@ -77,15 +77,19 @@
 			<!--<script src="https://www.tokbox.com/v0.91/js/TB.min.js"></script>-->
 			<script src="https://staging.tokbox.com/v0.91/js/TB.min.js"></script>
 			<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+			<script src="/_ah/channel/jsapi"></script>
 			<script>
 			<!--
 				var apiKey		= '{{ config.api_key }}';
+				var connected	= false;
 				var sessionId	= '{{ session_id }}';
 				var token		= '{{ token }}';
 				var props		= '{{ config.props }}';
+				var presenter	= false;
+				var streams		= [ ];
 				var channel;
-				var currentStreams;
 				var stream;
+				var participant;
 				
 				token			= 'devtoken';
 				
@@ -94,24 +98,51 @@
 				var session = TB.initSession( sessionId );    
 				  
 				session.addEventListener( 'sessionConnected', sessionConnectedHandler );
-				session.addEventListener( 'streamCreated', streamCreatedHandler );   
+				session.addEventListener( 'streamCreated', streamCreatedHandler );  
+				session.addEventListener( 'streamDestroyed', streamDestroyedHandler ); 
 				   
 				session.connect( apiKey, token );
 				
 				function sessionConnectedHandler(e)
 				{
-					steam	= session.publish( 'user-webcam' );
+					streams	= e.streams;
+					
+					session.publish( 'user-webcam' );
 				}
 				
 				function streamCreatedHandler(e)
 				{
-					$.postAJAX( { method: 'connected', session_id: sessionId }, function(d)
+					var l;
+					var s;
+					
+					if ( !connected )
 					{
-						channel	= new goog.appengine.Channel( d );
+						stream	= e.streams[ 0 ];
+
+						$.postAJAX( { method: 'connected', stream_id: stream.streamId }, function(d)
+						{
+							channel	= new goog.appengine.Channel( d );
+
+							channel	= channel.open()
+
+							channel.onmessage	= channelOnMessage;
+						});
 						
-						channel	= channel.open()
-						
-						channel.onmessage	= channelOnMessage;
+						connected	= true;
+					}
+					else
+					{
+						streams.push( e.streams[ 0 ] );
+					}
+				}
+				
+				function streamDestroyedHandler(e)
+				{
+					var d	= e.streams[ 0 ].streamId;
+					
+					streams.filter( function(s)
+					{
+						return s.streamId != d;
 					});
 				}
 				
@@ -119,23 +150,49 @@
 				{
 					var d	= JSON.parse( e );
 					
-					if ( currentStreams )
+					console.log(d);
+					
+					if ( !presenter )
 					{
-						$.each( currentStreams, function()
-						{
-							session.unsubscribe( this );
-						});
+						presenter	= true;
 						
-						currentStreams	= null;
+						addStream( getStream( d.presenter ), 'presenter-webcam' );
 					}
 					
-					addStream( d.christy, 'christy-webcam' );
-					addStream( d.participant, 'participant-webcam' );
+					if ( participant )
+					{
+						session.unsubscribe( participant );
+					}
+					
+					participant	= addStream( getStream( d.participant ), 'participant-webcam' );
 				}
 				
 				function addStream(s, t)
 				{
-					session.subscribe( s, t, props );
+					return session.subscribe( s, t, props ).stream;
+				}
+				
+				function getStream(id)
+				{
+					var l;
+					var s;
+					var t;
+					
+					l	= streams.length;
+					
+					for ( var x = 0; x < l; x++ )
+					{
+						t	= streams[ x ];
+						
+						if ( t.streamId == id )
+						{
+							s	= t;
+							
+							break;
+						}
+					}
+					
+					return s;
 				}
 				
 				$.postAJAX	= function(d, c)

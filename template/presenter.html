@@ -22,11 +22,11 @@
 				<p>
 					This is your current web cam feed, smile:
 				</p>
-				<div id="christy-webcam"></div>
+				<div id="presenter-webcam"></div>
 				<p>
 					We've added their scheduled times, but you're in control so feel free to select whomever you want to chat to:
 				</p>
-				<ul class="media-grid">
+				<ul class="media-grid" id="streams">
 					
 				</ul>
 			{% else %}
@@ -74,10 +74,13 @@
 			<script>
 			<!--
 				var apiKey		= '{{ config.api_key }}';
+				var connected	= false;
 				var sessionId	= '{{ session_id }}';
 				var token		= '{{ token }}';
-				var props		= '{{ config.props }}';
+				var props		= {{ config.props }};
+				var currentStreams;
 				var stream;
+				var streams;
 				
 				token			= 'moderator_token';
 				
@@ -86,20 +89,88 @@
 				var session = TB.initSession( sessionId );    
 				  
 				session.addEventListener( 'sessionConnected', sessionConnectedHandler );
-				session.addEventListener( 'streamCreated', streamCreatedHandler );   
+				session.addEventListener( 'streamCreated', streamCreatedHandler );
+				session.addEventListener( 'streamDestroyed', streamDestroyedHandler );
 				   
 				session.connect( apiKey, token );
 				
 				function sessionConnectedHandler(e)
 				{
-					steam	= session.publish( 'christy-webcam' );
+					streams	= e.streams;
+					
+					session.publish( 'presenter-webcam', props );
 				}
 				
 				function streamCreatedHandler(e)
 				{
-					$.postAJAX( { method: 'connected', session_id: sessionId }, function(d)
+					var l;
+					var s;
+					
+					if ( !connected )
 					{
-						console.log(d);
+						stream	= e.streams[ 0 ];
+						
+						$.postAJAX( { method: 'connected', stream_id: stream.streamId }, function(d)
+						{
+							// streams	= d;
+							console.log(d);
+						});
+						
+						connected	= true;
+					}
+					else
+					{
+						streams.push( e.streams[ 0 ] );
+					}
+					
+					updateStreams();
+				}
+				
+				function streamDestroyedHandler(e)
+				{
+					var d	= e.streams[ 0 ].streamId;
+					
+					console.log(streams);
+					
+					streams	= streams.filter( function(s)
+					{
+						return s.streamId != d;
+					});
+					
+					console.log(streams);
+					
+					updateStreams();
+				}
+				
+				function updateStreams()
+				{
+					if ( currentStreams )
+					{
+						$.each( currentStreams, function()
+						{
+							session.unsubscribe( this );
+						});
+					}
+					
+					currentStreams	= [ ];
+					
+					$( '#streams' ).empty();
+					
+					$.each( streams, function()
+					{
+						if ( this.streamId === stream.streamId )
+						{
+							return;
+						}
+						
+						var id	= 'stream' + this.streamId;
+						var s	= this;
+						
+						$( '#streams' ).append( '<li><div id="' + id + '"></div><br /><a href="javascript:selectStream(\'' + this.streamId + '\')" class="btn">Select</a></li>' );
+						
+						session.subscribe( this, id, props );
+						
+						currentStreams.push( s );
 					});
 				}
 				
