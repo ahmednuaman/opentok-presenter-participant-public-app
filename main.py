@@ -12,7 +12,8 @@ def main():
         ( '/api/presenter', api_controller.PresenterController ),
         ( '/api/participant', api_controller.ParticipantController ),
         ( '/presenter/login', api_controller.LoginController ),
-        ( '/participant/login', api_controller.LoginController )
+        ( '/participant/login', api_controller.LoginController )#,
+        # ( '/add_init_data', api_controller.AddInitDataController )
     ], debug=True )
     util.run_wsgi_app( application )
 

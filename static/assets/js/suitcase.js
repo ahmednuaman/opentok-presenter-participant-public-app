@@ -97,7 +97,10 @@ var S	= {
 	
 	channelMessage												: function(e)
 	{
-		console.log(e);
+		var d	= JSON.parse( e );
+		
+		S.session.subscribe( d.christy, 'stream-presenter' );
+		S.session.subscribe( d.participant, 'stream-participant' );
 	},
 	
 	setupSession												: function()
@@ -105,48 +108,19 @@ var S	= {
 		S.session	= TB.initSession( S.sessionId );
 		
 		S.session.addEventListener( 'sessionConnected', 	S.sessionConnectedHandler );
-		S.session.addEventListener( 'sessionDisconnected', 	S.sessionDisconnectedHandler );
-		S.session.addEventListener( 'connectionCreated', 	S.connectionCreatedHandler );
-		S.session.addEventListener( 'connectionDestroyed', 	S.connectionDestroyedHandler );
 		S.session.addEventListener( 'streamCreated', 		S.streamCreatedHandler );
-		S.session.addEventListener( 'streamDestroyed', 		S.streamDestroyedHandler );
 		
 		S.session.connect( S.apiKey, S.tokenId );
 	},
 	
 	sessionConnectedHandler										: function(e)
 	{
-		// for ( var i = 0; i < e.streams.length; i++ ) 
-		// 		{
-		// 			S.addStream( e.streams[ i ] );
-		// 		}
-		S.session.subscribe( e.streams[ S.streams[ 0 ] ], 'stream-presenter' );
-		S.session.subscribe( e.streams[ S.streams[ 1 ] ], 'stream-participant' );
-	},
-	
-	sessionDisconnectedHandler									: function(e)
-	{
-		
-	},
-	
-	connectionCreatedHandler									: function(e)
-	{
-		
-	},
-	
-	connectionDestroyedHandler									: function(e)
-	{
-		
+		console.log(e);
 	},
 	
 	streamCreatedHandler										: function(e)
 	{
-		
-	},
-	
-	streamDestroyedHandler										: function(e)
-	{
-		
+		console.log(e);
 	}
 };
 

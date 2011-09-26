@@ -8,27 +8,41 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="stylesheet" href="http://twitter.github.com/bootstrap/1.3.0/bootstrap.min.css" />
 		<link rel="stylesheet" href="/assets/css/styles.css" />
-		<title>{% if logged_in %}Admin{% else %}Log in{% endif %}</title>
+		<title>{% if logged_in %}Company for Christy{% else %}Log in{% endif %}</title>
 	</head>
 	<body>
 		<div id="container">
 			{% if logged_in %}
 				<h1>
-					Hello Christy!
+					Hello {{ email }}!
 				</h1>
-				<h3>
-					Hope you're sitting comfortably cos all these lovely people below would like to chat with you.
-				</h3>
 				<p>
-					This is your current web cam feed, smile:
+					This is Christy's and the current participant's web cam feeds:
 				</p>
-				<div id="christy-webcam"></div>
-				<p>
-					We've added their scheduled times, but you're in control so feel free to select whomever you want to chat to:
-				</p>
-				<ul class="media-grid">
-					
-				</ul>
+				<div class="row">
+					<div class="span8">
+						<div id="christy-webcam"></div>
+					</div>
+					<div class="span8">
+						<div id="participant-webcam"></div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="span-one-third">
+						<h3>
+							You're booked in for {{ time }}.
+						</h3>
+						<p>
+							<strong>Please note:</strong> Christy has full control over the people she wants to chat with and she may not stick to the scheduled times, so please be patient and enjoy the show.
+						</p>
+					</div>
+					<div class="span-two-third">
+						<h3>
+							This is your web cam feed, smile!
+						</h3>
+						<div id="user-webcam"></div>
+					</div>
+				</div>
 			{% else %}
 				<div id="login">
 					{% if error %}
@@ -38,25 +52,17 @@
 							</p>
 						</div>
 					{% endif %}
-					<form action="/presenter/login" method="post">
+					<form action="/participant/login" method="post">
 						<fieldset>
 							<legend>
 								Please log in
 							</legend>
 							<div class="clearfix">
-								<label for="username">
-									Username
+								<label for="email">
+									Email
 								</label>
 								<div class="input">
-									<input name="username" id="username" type="password" placeholder="Username" />
-								</div>
-							</div>
-							<div class="clearfix">
-								<label for="password">
-									Password
-								</label>
-								<div class="input">
-									<input name="password" id="password" type="password" placeholder="Password" />
+									<input name="email" id="email" type="text" placeholder="Email" />
 								</div>
 							</div>
 							<div class="actions">
@@ -77,9 +83,11 @@
 				var sessionId	= '{{ session_id }}';
 				var token		= '{{ token }}';
 				var props		= '{{ config.props }}';
+				var channel;
+				var currentStreams;
 				var stream;
 				
-				token			= 'moderator_token';
+				token			= 'devtoken';
 				
 				TB.setLogLevel( TB.DEBUG );
 				
@@ -92,20 +100,47 @@
 				
 				function sessionConnectedHandler(e)
 				{
-					steam	= session.publish( 'christy-webcam' );
+					steam	= session.publish( 'user-webcam' );
 				}
 				
 				function streamCreatedHandler(e)
 				{
 					$.postAJAX( { method: 'connected', session_id: sessionId }, function(d)
 					{
-						console.log(d);
+						channel	= new goog.appengine.Channel( d );
+						
+						channel	= channel.open()
+						
+						channel.onmessage	= channelOnMessage;
 					});
+				}
+				
+				function channelOnMessage(e)
+				{
+					var d	= JSON.parse( e );
+					
+					if ( currentStreams )
+					{
+						$.each( currentStreams, function()
+						{
+							session.unsubscribe( this );
+						});
+						
+						currentStreams	= null;
+					}
+					
+					addStream( d.christy, 'christy-webcam' );
+					addStream( d.participant, 'participant-webcam' );
+				}
+				
+				function addStream(s, t)
+				{
+					session.subscribe( s, t, props );
 				}
 				
 				$.postAJAX	= function(d, c)
 				{
-					$.post( '/api/presenter', d, c, 'json' );
+					$.post( '/api/participant', d, c, 'json' );
 				}
 			-->
 			</script>

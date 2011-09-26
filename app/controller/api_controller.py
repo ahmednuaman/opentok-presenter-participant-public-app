@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import datetime
 import os
 import sys
 import uuid
@@ -7,24 +8,26 @@ import uuid
 from app.helper import config_helper
 from app.helper import opentok_helper
 from app.model import channel_model
+from app.model import participant_model
 from app.model import stream_model
 from django.utils import simplejson
+from gaesessions import get_current_session
 from google.appengine.api import channel
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 
 class PublicController(webapp.RequestHandler):
     def post(self):
-        i   = str( uuid.uuid4() )
-        t   = channel.create_channel( i )
-        
-        channel_model.add_channel( t )
-        
-        self.response.out.write( t )
+        self.response.out.write( create_channel() )
     
 
 class PresenterController(webapp.RequestHandler):
     def post(self):
+        sess    = get_current_session()
+        
+        if sess.is_active() is False:
+            error( 'Not authed' )
+        
         req = self.request.get( 'method' )
         
         msg = None
@@ -35,7 +38,7 @@ class PresenterController(webapp.RequestHandler):
         elif req == 'connected':
             stream_model.add_stream( self.request.get( 'session_id' ), True, True )
             
-            msg = True
+            msg = stream_model.get_streams()
             
         if msg is not None:
             msg = simplejson.dumps( msg )
@@ -47,6 +50,19 @@ class PresenterController(webapp.RequestHandler):
 class ParticipantController(webapp.RequestHandler):
     def post(self):
         req = self.request.get( 'method' )
+        
+        msg = None
+        
+        if req == 'connected':
+            stream_model.add_stream( self.request.get( 'session_id' ) )
+            
+            msg = create_channel()
+            
+        if msg is not None:
+            msg = simplejson.dumps( msg )
+            
+            send( msg )
+        
     
 
 class LoginController(webapp.RequestHandler):
@@ -58,29 +74,74 @@ class LoginController(webapp.RequestHandler):
         c   = config()
         l   = False
         e   = False
+        s   = ''
         t   = ''
         
         if pre:
             if self.request.get( 'username' ) == c.pre.username and self.request.get( 'password' ) == c.pre.password:
                 l   = True
                 
-                sdk = opentok_helper.OpenTokSDK( c.tokbox.api_key, c.tokbox.secret )
-                
-                s   = sdk.create_session( self.request.url )
-                t   = sdk.generate_token( s.session_id, c.role.presenter, c.pre.username )
-                
             else:
                 e   = True
             
-            self.request.cookies[ c.cookie_name ] = 1 if l else 0
+            sess    = get_current_session()
+            
+            if sess.is_active():
+                sess.terminate()
+            
+            if l:
+                sess[ 'logged_in' ] = True
+            
+        else:
+            em  = self.request.get( 'email' )
+            
+            if len( em ) > 0:
+                part    = participant_model.get_participant_by_email( em )
+                
+                if part is not None:
+                    l   = True
+                    
+                else:
+                    e   = True
+                    
+                
+            else:
+                e   = True
+                
+            
         
-        load( self, { 'error': e, 'logged_in': l, 'token': t, 'session_id': s.session_id, 'config': c.tokbox } )
+        if l:
+            sdk = opentok_helper.OpenTokSDK( c.tokbox.api_key, c.tokbox.secret )
+            
+            s   = sdk.create_session( self.request.url ).session_id
+            t   = sdk.generate_token( s, c.role.presenter if pre else c.role.participant )
+        
+        d   = { 'error': e, 'logged_in': l, 'token': t, 'session_id': s, 'config': c.tokbox, 'email': '', 'time': '' }
+        
+        if pre is False and l and part:
+            d[ 'email' ]    = em
+            d[ 'time']      = part.time
+        
+        load( self, d )
+    
+
+class AddInitDataController(webapp.RequestHandler):
+    def get(self):
+        participant_model.add_participant( 'ahmednuaman@googlemail.com', datetime.datetime.now() )
     
 
 def config():
     c   = config_helper.config()
     
     return c
+
+def create_channel():
+    i   = str( uuid.uuid4() )
+    t   = channel.create_channel( i )
+    
+    channel_model.add_channel( t )
+    
+    return t
 
 def pre_or_part(s, t, f):
     return t if s.request.path == '/presenter/login' else f
