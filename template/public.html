@@ -134,6 +134,15 @@
 					{
 						presenter	= addStream( getStream( d.presenter ), 'presenter-webcam' );
 					}
+					else if ( presenter && d.presenter )
+					{
+						if ( presenter.stream.streamId != d.presenter )
+						{
+							session.unsubscribe( presenter );
+							
+							presenter	= addStream( getStream( d.presenter ), 'presenter-webcam' );
+						}
+					}
 					
 					if ( participant )
 					{
