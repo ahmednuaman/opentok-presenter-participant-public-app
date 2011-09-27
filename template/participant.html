@@ -77,19 +77,17 @@
 			<!--<script src="https://www.tokbox.com/v0.91/js/TB.min.js"></script>-->
 			<script src="https://staging.tokbox.com/v0.91/js/TB.min.js"></script>
 			<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
-			<script src="/_ah/channel/jsapi"></script>
 			<script>
 			<!--
 				var apiKey		= '{{ config.api_key }}';
 				var connected	= false;
 				var sessionId	= '{{ session_id }}';
 				var token		= '{{ token }}';
-				var props		= '{{ config.props }}';
-				var presenter	= false;
+				var props		= {{ config.props }};
 				var streams		= [ ];
-				var channel;
-				var stream;
+				var presenter;
 				var participant;
+				var stream;
 				
 				token			= 'devtoken';
 				
@@ -112,64 +110,77 @@
 				
 				function streamCreatedHandler(e)
 				{
-					var l;
-					var s;
+					var s	= e.streams[ 0 ];
 					
 					if ( !connected )
 					{
-						stream	= e.streams[ 0 ];
-
+						stream	= s;
+						
 						$.postAJAX( { method: 'connected', stream_id: stream.streamId }, function(d)
 						{
-							channel	= new goog.appengine.Channel( d );
+							// setInterval( pollForUpdate, 500 );
 							
-							channel	= channel.open()
-							
-							channel.onmessage	= channelOnMessage;
+							if ( !presenter && d.presenter_id )
+							{
+								presenter	= addStream( getStream( d.presenter_id ), 'presenter-webcam' );
+							}
 						});
 						
 						connected	= true;
 					}
-					else
-					{
-						streams.push( e.streams[ 0 ] );
-					}
+					
+					streams.push( s );
 				}
 				
 				function streamDestroyedHandler(e)
 				{
 					var d	= e.streams[ 0 ].streamId;
 					
+					if ( d == presenter.stream.streamId )
+					{
+						presenter	= null;
+					}
+					
 					streams.filter( function(s)
 					{
 						return s.streamId != d;
 					});
+					
+					session.unsubscribe( e.streams[ 0 ] );
 				}
 				
-				function channelOnMessage(e)
+				function pollForUpdate()
 				{
-					var d	= JSON.parse( e );
-					
-					console.log('channelOnMessage',e);
-					
-					if ( !presenter )
+					$.post( '/api/public', { method: 'get_streams' }, function(d)
 					{
-						presenter	= true;
+						if ( !presenter && d.presenter )
+						{
+							presenter	= addStream( getStream( d.presenter ), 'presenter-webcam' );
+						}
 						
-						addStream( getStream( d.presenter ), 'presenter-webcam' );
-					}
-					
-					if ( participant )
-					{
-						session.unsubscribe( participant );
-					}
-					
-					participant	= addStream( getStream( d.participant ), 'participant-webcam' );
+						if ( participant )
+						{
+							if ( participant.stream.streamId != d.participant )
+							{
+								if ( participant )
+								{
+									session.unsubscribe( participant );
+								}
+								
+								participant	= addStream( getStream( d.participant ), 'participant-webcam' );
+							}
+						}
+						else if ( d.participant )
+						{
+							participant	= addStream( getStream( d.participant ), 'participant-webcam' );
+						}
+						
+					}, 'json' );
 				}
 				
 				function addStream(s, t)
 				{
-					return session.subscribe( s, t, props ).stream;
+					return session.subscribe( s, t, props );
 				}
 				
 				function getStream(id)

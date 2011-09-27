@@ -7,18 +7,23 @@ import uuid
 
 from app.helper import config_helper
 from app.helper import opentok_helper
-from app.model import channel_model
 from app.model import participant_model
 from app.model import stream_model
 from django.utils import simplejson
 from gaesessions import get_current_session
-from google.appengine.api import channel
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 
 class PublicController(webapp.RequestHandler):
     def post(self):
-        self.response.out.write( create_channel() )
+        req = self.request.get( 'method' )
+        
+        if req is None:
+            error( 'No method' )
+            
+        
+        if req == 'get_streams':
+            self.response.out.write( simplejson.dumps( stream_model.get_streams() ) )
     
 
 class PresenterController(webapp.RequestHandler):
@@ -36,26 +41,20 @@ class PresenterController(webapp.RequestHandler):
         
         req = self.request.get( 'method' )
         
-        msg = None
-        
-        if req == 'set_streams':
-            msg = simplejson.loads( self.request.get( 'stream[]' ) )
+        if req == 'set_stream':
+            stream_model.delete_current_participant()
+            
+            stream_model.update_stream( self.request.get( 'stream_id' ), True )
             
         elif req == 'connected':
+            stream_model.delete_current_participant()
             stream_model.delete_current_presenter()
             
             stream_model.add_stream( self.request.get( 'stream_id' ), True, True )
             
-            msg = stream_model.get_streams()
-            
         if req == 'connected' or req == 'update':
             get_all_streams( self )
             
-        
-        if msg is not None:
-            msg = simplejson.dumps( msg )
-            
-            send( msg )
         
     
 
@@ -63,17 +62,13 @@ class ParticipantController(webapp.RequestHandler):
     def post(self):
         req = self.request.get( 'method' )
         
-        msg = None
-        
         if req == 'connected':
             stream_model.add_stream( self.request.get( 'stream_id' ) )
             
-            msg = create_channel()
+            d   = { 'presenter_id': stream_model.get_current_presenter() }
             
-        if msg is not None:
-            msg = simplejson.dumps( msg )
+            self.response.out.write( simplejson.dumps( d ) )
             
-            send( msg )
         
     
 
@@ -148,14 +143,6 @@ def config():
     
     return c
 
-def create_channel():
-    i   = str( uuid.uuid4() )
-    t   = channel.create_channel( i )
-    
-    channel_model.add_channel( t )
-    
-    return t
-
 def get_all_streams(s):
     s.response.out.write( simplejson.dumps( stream_model.get_all_streams() ) )
 
@@ -164,13 +151,6 @@ def pre_or_part(s, t, f):
 
 def load(s, d={ }):
     s.response.out.write( template.render( 'template/' + pre_or_part( s, 'presenter', 'participant' ) + '.html', d ) )
-
-def send(m):
-    cs  = channel_model.get_channels()
-    
-    for c in cs:
-        channel.send_message( c, m )
-    
 
 def error(s):
     logging.error( s )

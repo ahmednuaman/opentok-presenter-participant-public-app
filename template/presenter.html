@@ -168,7 +168,7 @@
 				
 				function selectStream(id)
 				{
-					$.postAJAX( { method: 'set_streams', stream: [ stream.streamId, id ] }, function(d)
+					$.postAJAX( { method: 'set_stream', stream_id: id }, function(d)
 					{
 						console.log(d);
 					});

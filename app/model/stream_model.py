@@ -28,16 +28,23 @@ def add_streams(a):
         m.put()
     
 
+def get_current_presenter():
+    q   = StreamModel().gql( 'WHERE presenter = :1', True ).get()
+    
+    if q is not None:
+        return q.stream
+
 def get_stream(s):
     q   = StreamModel().gql( 'WHERE stream = :1', s ).get()
     
-    return q
+    if q is not None:
+        return q.stream
 
 def get_streams():
     q1  = StreamModel().gql( 'WHERE presenter = :1', True ).get()
     q2  = StreamModel().gql( 'WHERE active = :1 and presenter = :2', True, False ).get()
     
-    ss  = { 'presenter': q1.stream if q1 is not None else '', 'participant': q2.stream if q2 is not None else '' }
+    ss  = { 'presenter': str( q1.stream ) if q1 is not None else '', 'participant': str( q2.stream ) if q2 is not None else '' }
     
     return ss
 
@@ -54,17 +61,19 @@ def get_all_streams():
     return ss
 
 def update_stream(s, a):
-    s   = get_stream( s )
+    s   = StreamModel().gql( 'WHERE stream = :1', s ).get()
     
     s.active    = a
     
     s.put()
 
 def delete_current_participant():
-    q   = StreamModel().gql( 'WHERE active = :1', True ).get()
+    q   = StreamModel().gql( 'WHERE active = :1 and presenter = :2', True, False ).get()
     
     if q is not None:
-        q.delete()
+        q.active    = False
+        
+        q.put()
     
 
 def delete_current_presenter():
