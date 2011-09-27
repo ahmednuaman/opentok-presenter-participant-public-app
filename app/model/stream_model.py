@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from google.appengine.ext import db
+from google.appengine.api import memcache
 
 class StreamModel(db.Model):
     stream      = db.StringProperty()
@@ -29,38 +30,72 @@ def add_streams(a):
     
 
 def get_current_presenter():
-    q   = StreamModel().gql( 'WHERE presenter = :1', True ).get()
+    p   = memcache.get( 'presenter' )
     
-    if q is not None:
-        return q.stream
+    if p is None:
+        q   = StreamModel().gql( 'WHERE presenter = :1', True ).get()
+        
+        if q is not None:
+            memcache.add( 'presenter', q )
+            
+            return q.stream
+        
+    else:
+        return p.stream
+    
 
 def get_stream(s):
-    q   = StreamModel().gql( 'WHERE stream = :1', s ).get()
+    p   = memcache.get( 'stream' + s )
     
-    if q is not None:
-        return q.stream
+    if p is None:
+        q   = StreamModel().gql( 'WHERE stream = :1', s ).get()
+        
+        if q is not None:
+            memcache.add( 'stream' + s, q )
+            
+            return q.stream
+        
+    else:
+        return p.stream
+    
 
 def get_streams():
-    q1  = StreamModel().gql( 'WHERE presenter = :1', True ).get()
-    q2  = StreamModel().gql( 'WHERE active = :1 and presenter = :2', True, False ).get()
+    ss  = memcache.get( 'streams' )
     
-    ss  = { 'presenter': str( q1.stream ) if q1 is not None else '', 'participant': str( q2.stream ) if q2 is not None else '' }
+    if ss is None:
+        q1  = StreamModel().gql( 'WHERE presenter = :1', True ).get()
+        q2  = StreamModel().gql( 'WHERE active = :1 and presenter = :2', True, False ).get()
+        
+        ss  = { 'presenter': str( q1.stream ) if q1 is not None else '', 'participant': str( q2.stream ) if q2 is not None else '' }
+        
+        memcache.add( 'streams', ss )
     
     return ss
 
 def get_all_streams():
-    q   = StreamModel().gql( 'WHERE presenter = :1', False ).fetch( 1000 )
+    ss  = memcache.get( 'all_streams' )
     
-    ss  = [ ]
-    
-    if q is not None:
-        for s in q:
-            ss.append( s.stream )
+    if ss is None:
+        q   = StreamModel().gql( 'WHERE presenter = :1', False ).fetch( 1000 )
         
-    
+        ss  = [ ]
+        
+        if q is not None:
+            for s in q:
+                ss.append( s.stream )
+                
+            
+        
+        memcache.add( 'all_streams', ss )
+        
     return ss
 
 def update_stream(s, a):
+    c   = memcache.get( 'stream' + s )
+    
+    if c is not None:
+        memcache.delete( 'stream' + s )
+    
     s   = StreamModel().gql( 'WHERE stream = :1', s ).get()
     
     s.active    = a
@@ -68,6 +103,11 @@ def update_stream(s, a):
     s.put()
 
 def delete_current_participant():
+    c   = memcache.get( 'streams' )
+    
+    if c is not None:
+        memcache.delete( 'streams' )
+    
     q   = StreamModel().gql( 'WHERE active = :1 and presenter = :2', True, False ).get()
     
     if q is not None:
@@ -77,6 +117,16 @@ def delete_current_participant():
     
 
 def delete_current_presenter():
+    c   = memcache.get( 'streams' )
+    
+    if c is not None:
+        memcache.delete( 'streams' )
+    
+    c   = memcache.get( 'presenter' )
+    
+    if c is not None:
+        memcache.delete( 'presenter' )
+    
     q   = StreamModel().gql( 'WHERE presenter = :1', True ).get()
     
     if q is not None:
