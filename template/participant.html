@@ -118,7 +118,7 @@
 						
 						$.postAJAX( { method: 'connected', stream_id: stream.streamId }, function(d)
 						{
-							// setInterval( pollForUpdate, 500 );
+							setInterval( pollForUpdate, 500 );
 							
 							if ( !presenter && d.presenter_id )
 							{
@@ -158,16 +158,25 @@
 							presenter	= addStream( getStream( d.presenter ), 'presenter-webcam' );
 						}
 						
+						console.log(participant);
 						if ( participant )
 						{
+							console.log(participant.stream.streamId != d.participant,participant.stream.streamId,d.participant);
 							if ( participant.stream.streamId != d.participant )
 							{
+								console.log(participant);
 								if ( participant )
 								{
 									session.unsubscribe( participant );
 								}
 								
-								participant	= addStream( getStream( d.participant ), 'participant-webcam' );
+								var s	= getStream( d.participant );
+								
+								console.log(s);
+								if ( s )
+								{
+									participant	= addStream( getStream( d.participant ), 'participant-webcam' );
+								}
 							}
 						}
 						else if ( d.participant )
@@ -180,7 +189,11 @@
 				
 				function addStream(s, t)
 				{
-					return session.subscribe( s, t, props );
+					var d	= 'stream' + s.streamId
+					
+					$( '#' + t ).empty().append( '<div id="' + d + '"></div>' );
+					
+					return session.subscribe( s, d, props );
 				}
 				
 				function getStream(id)
