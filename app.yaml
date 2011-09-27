@@ -16,6 +16,8 @@ skip_files:
 handlers:
 - url: /assets
   static_dir: static/assets
-  
+- url: /humans.txt
+  static_files: static/assets/humans.txt
+  upload: static/assets/humans.txt
 - url: .*
   script: main.py
