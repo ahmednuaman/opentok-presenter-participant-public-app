@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from app.model import participant_model
 from google.appengine.ext import db
 from google.appengine.api import memcache
 
@@ -7,6 +8,7 @@ class StreamModel(db.Model):
     stream      = db.StringProperty()
     active      = db.BooleanProperty(default=False)
     presenter   = db.BooleanProperty(default=False)
+    # participant = db.ReferenceProperty( participant_model.ParticipantModel )
 
 def add_stream(s, a=False, p=False):
     m   = StreamModel()

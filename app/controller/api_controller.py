@@ -147,7 +147,11 @@ class LoginController(webapp.RequestHandler):
 
 class AddInitDataController(webapp.RequestHandler):
     def get(self):
-        participant_model.add_participant( 'ahmednuaman@googlemail.com', datetime.datetime.now() )
+        participant_model.add_participant( 'ahmednuaman@googlemail.com', '7:00' )
+        participant_model.add_participant( 'tmillar48@hotmail.co.uk', '8:00' ) # 8
+        participant_model.add_participant( 'martin.reed@bbh.co.uk', '8:10' ) # 8.10
+        participant_model.add_participant( 'daniel@mothernewyork.com', '8:20' ) # 8.20
+        participant_model.add_participant( 'melanie.arrow@bbh.co.uk', '8:30' ) # 8.30
     
 
 def config():

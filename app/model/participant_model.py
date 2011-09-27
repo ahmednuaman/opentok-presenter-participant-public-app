@@ -6,7 +6,7 @@ from google.appengine.ext import db
 
 class ParticipantModel(db.Model):
     email   = db.StringProperty()
-    time    = db.DateTimeProperty()
+    time    = db.StringProperty()
 
 def add_participant(s, t):
     m   = ParticipantModel()
