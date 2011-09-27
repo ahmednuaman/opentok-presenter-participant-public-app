@@ -134,11 +134,9 @@
 						return s.streamId != d;
 					});
 					
-					console.log($( '#stream' + d  ),$( '#stream' + d  ).parents('li').eq(0));
+					$( '#stream' + d + 'li' ).remove();
 					
 					session.unsubscribe( e.streams[ 0 ] );
-					
-					$( '#stream' + d  ).parents( 'li' ).eq( 0 ).remove();
 				}
 				
 				function updateStreams()
@@ -163,7 +161,7 @@
 				{
 					var id	= 'stream' + s.streamId;
 					
-					$( '#streams' ).append( '<li><div id="' + id + '"></div><br /><a href="javascript:selectStream(\'' + s.streamId + '\')" class="btn">Select</a></li>' );
+					$( '#streams' ).append( '<li id="' + id + 'li"><div id="' + id + '"></div><br /><a href="javascript:selectStream(\'' + s.streamId + '\')" class="btn">Select</a></li>' );
 					
 					session.subscribe( s, id, props );
 				}

@@ -122,9 +122,9 @@
 						$.postAJAX( { method: 'connected', stream_id: stream.streamId }, function(d)
 						{
 							channel	= new goog.appengine.Channel( d );
-
+							
 							channel	= channel.open()
-
+							
 							channel.onmessage	= channelOnMessage;
 						});
 						
@@ -150,7 +150,7 @@
 				{
 					var d	= JSON.parse( e );
 					
-					console.log(d);
+					console.log('channelOnMessage',e);
 					
 					if ( !presenter )
 					{

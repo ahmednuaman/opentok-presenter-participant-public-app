@@ -39,7 +39,7 @@ class PresenterController(webapp.RequestHandler):
         msg = None
         
         if req == 'set_streams':
-            msg = simplejson.loads( self.request.get( 'streams' ) )
+            msg = simplejson.loads( self.request.get( 'stream[]' ) )
             
         elif req == 'connected':
             stream_model.delete_current_presenter()
