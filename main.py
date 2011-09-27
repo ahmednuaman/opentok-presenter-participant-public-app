@@ -8,6 +8,7 @@ from google.appengine.ext.webapp import util
 
 def main():
     application = webapp.WSGIApplication( [
+        ( '/', api_controller.PublicController ),
         ( '/api/public', api_controller.PublicController ),
         ( '/api/presenter', api_controller.PresenterController ),
         ( '/api/participant', api_controller.ParticipantController ),

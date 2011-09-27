@@ -24,6 +24,18 @@ class PublicController(webapp.RequestHandler):
         
         if req == 'get_streams':
             self.response.out.write( simplejson.dumps( stream_model.get_streams() ) )
+        
+    
+    def get(self):
+        c   = config()
+        
+        sdk = opentok_helper.OpenTokSDK( c.tokbox.api_key, c.tokbox.secret )
+        
+        t   = sdk.generate_token( c.tokbox.session_id, c.role.public )
+        
+        d   = { 'token': t, 'session_id': c.tokbox.session_id, 'config': c.tokbox }
+        
+        self.response.out.write( template.render( 'template/public.html', d ) )
     
 
 class PresenterController(webapp.RequestHandler):

@@ -17,9 +17,5 @@ handlers:
 - url: /assets
   static_dir: static/assets
   
-- url: /
-  static_files: template/public.html
-  upload: template/public.html
-  
 - url: .*
   script: main.py

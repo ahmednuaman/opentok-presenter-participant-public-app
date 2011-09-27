@@ -158,13 +158,10 @@
 							presenter	= addStream( getStream( d.presenter ), 'presenter-webcam' );
 						}
 						
-						console.log(participant);
 						if ( participant )
 						{
-							console.log(participant.stream.streamId != d.participant,participant.stream.streamId,d.participant);
 							if ( participant.stream.streamId != d.participant )
 							{
-								console.log(participant);
 								if ( participant )
 								{
 									session.unsubscribe( participant );
@@ -172,7 +169,6 @@
 								
 								var s	= getStream( d.participant );
 								
-								console.log(s);
 								if ( s )
 								{
 									participant	= addStream( getStream( d.participant ), 'participant-webcam' );
@@ -226,5 +222,11 @@
 			-->
 			</script>
 		{% endif %}
+		<script>
+			var _gaq=[['_setAccount','UA-25967876-1'],['_trackPageview'],['_trackPageLoadTime']];
+			(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];g.async=1;
+			g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+			s.parentNode.insertBefore(g,s)}(document,'script'));
+		</script>
 	</body>
 </html>
