@@ -48,7 +48,6 @@ class PresenterController(webapp.RequestHandler):
             
             msg = stream_model.get_streams()
             
-        
         if req == 'connected' or req == 'update':
             get_all_streams( self )
             

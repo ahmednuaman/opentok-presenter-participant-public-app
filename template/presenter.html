@@ -98,8 +98,6 @@
 					streams	= e.streams;
 					
 					session.publish( 'presenter-webcam', props );
-					
-					updateStreams();
 				}
 				
 				function streamCreatedHandler(e)
@@ -110,9 +108,10 @@
 					{
 						stream	= s;
 						
+						updateStreams();
+						
 						$.postAJAX( { method: 'connected', stream_id: stream.streamId }, function(d)
 						{
-							// streams	= d;
 							console.log(d);
 						});
 						
@@ -135,26 +134,29 @@
 						return s.streamId != d;
 					});
 					
-					session.unsubscribe( e.streams[ 0 ] );
+					console.log($( '#stream' + d  ),$( '#stream' + d  ).parents('li').eq(0));
 					
-					console.log($( '#stream' + d  ),$( '#stream' + d  ).parents('li').eq(0))
+					session.unsubscribe( e.streams[ 0 ] );
 					
 					$( '#stream' + d  ).parents( 'li' ).eq( 0 ).remove();
 				}
 				
 				function updateStreams()
 				{
-					$( '#streams' ).empty();
+					var l	= streams.length;
+					var s;
 					
-					$.each( streams, function()
+					for ( var x = 0; x < l; x++ )
 					{
-						if ( this.streamId === stream.streamId )
-						{
-							return;
-						}
+						s	= streams[ x ];
 						
-						addStream( this );
-					});
+						console.log(s);
+						
+						if ( s.streamId != stream.streamId )
+						{
+							addStream( s );
+						}
+					}
 				}
 				
 				function addStream(s)
@@ -164,6 +166,14 @@
 					$( '#streams' ).append( '<li><div id="' + id + '"></div><br /><a href="javascript:selectStream(\'' + s.streamId + '\')" class="btn">Select</a></li>' );
 					
 					session.subscribe( s, id, props );
+				}
+				
+				function selectStream(id)
+				{
+					$.postAJAX( { method: 'set_streams', stream: [ stream.streamId, id ] }, function(d)
+					{
+						console.log(d);
+					});
 				}
 				
 				$.postAJAX	= function(d, c)

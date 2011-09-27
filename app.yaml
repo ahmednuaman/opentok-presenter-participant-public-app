@@ -8,6 +8,7 @@ default_expiration: '30d'
 skip_files:
 - flash/.*
 - .*\.git.*
+- .*\.DS_Store.*
 - .*\.less.*
 - .*\.sh.*
 - .*js/(.+packaged\.js|.+(?<!packaged)\.js)

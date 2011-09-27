@@ -60,6 +60,13 @@ def update_stream(s, a):
     
     s.put()
 
+def delete_current_participant():
+    q   = StreamModel().gql( 'WHERE active = :1', True ).get()
+    
+    if q is not None:
+        q.delete()
+    
+
 def delete_current_presenter():
     q   = StreamModel().gql( 'WHERE presenter = :1', True ).get()
     
