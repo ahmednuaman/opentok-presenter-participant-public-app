@@ -8,14 +8,19 @@ class StreamModel(db.Model):
     stream      = db.StringProperty()
     active      = db.BooleanProperty(default=False)
     presenter   = db.BooleanProperty(default=False)
-    # participant = db.ReferenceProperty( participant_model.ParticipantModel )
+    participant = db.ReferenceProperty( participant_model.ParticipantModel )
 
-def add_stream(s, a=False, p=False):
+def add_stream(s, a=False, p=False, e=''):
     m   = StreamModel()
     
     m.stream    = s
     m.active    = a
     m.presenter = p
+    
+    q   = participant_model.get_participant_by_email( e )
+    
+    if q is not None:
+        m.participant   = q
     
     if p:
         delete_current_presenter()
@@ -31,6 +36,21 @@ def add_streams(a):
         m.put()
     
 
+def get_current_participant():
+    p   = memcache.get( 'participant' )
+    
+    if p is None:
+        q   = StreamModel().gql( 'WHERE active = :1 and presenter = :2', True, False ).get()
+        
+        if q is not None:
+            memcache.add( 'participant', q )
+            
+            return q
+        
+    else:
+        return p
+    
+
 def get_current_presenter():
     p   = memcache.get( 'presenter' )
     
@@ -40,10 +60,10 @@ def get_current_presenter():
         if q is not None:
             memcache.add( 'presenter', q )
             
-            return q.stream
-        
+            return q
+            
     else:
-        return p.stream
+        return p
     
 
 def get_stream(s):
@@ -55,18 +75,18 @@ def get_stream(s):
         if q is not None:
             memcache.add( 'stream' + s, q )
             
-            return q.stream
+            return q
         
     else:
-        return p.stream
+        return p
     
 
 def get_streams():
     ss  = memcache.get( 'streams' )
     
     if ss is None:
-        q1  = StreamModel().gql( 'WHERE presenter = :1', True ).get()
-        q2  = StreamModel().gql( 'WHERE active = :1 and presenter = :2', True, False ).get()
+        q1  = get_current_presenter() #StreamModel().gql( 'WHERE presenter = :1', True ).get()
+        q2  = get_current_participant() #StreamModel().gql( 'WHERE active = :1 and presenter = :2', True, False ).get()
         
         ss  = { 'presenter': str( q1.stream ) if q1 is not None else '', 'participant': str( q2.stream ) if q2 is not None else '' }
         
@@ -98,7 +118,7 @@ def update_stream(s, a):
     if c is not None:
         memcache.delete( 'stream' + s )
     
-    s   = StreamModel().gql( 'WHERE stream = :1', s ).get()
+    s   = get_stream( s )#StreamModel().gql( 'WHERE stream = :1', s ).get()
     
     s.active    = a
     
@@ -110,12 +130,15 @@ def delete_current_participant():
     if c is not None:
         memcache.delete( 'streams' )
     
-    q   = StreamModel().gql( 'WHERE active = :1 and presenter = :2', True, False ).get()
+    c   = memcache.get( 'participant' )
+    
+    if c is not None:
+        memcache.delete( 'participant' )
+    
+    q   = get_current_participant()
     
     if q is not None:
-        q.active    = False
-        
-        q.put()
+        q.delete()
     
 
 def delete_current_presenter():
@@ -129,7 +152,7 @@ def delete_current_presenter():
     if c is not None:
         memcache.delete( 'presenter' )
     
-    q   = StreamModel().gql( 'WHERE presenter = :1', True ).get()
+    q   = get_current_presenter()
     
     if q is not None:
         q.delete()

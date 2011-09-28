@@ -75,9 +75,9 @@ class ParticipantController(webapp.RequestHandler):
         req = self.request.get( 'method' )
         
         if req == 'connected':
-            stream_model.add_stream( self.request.get( 'stream_id' ) )
+            stream_model.add_stream( self.request.get( 'stream_id' ), False, False, self.request.get( 'email' ) )
             
-            d   = { 'presenter_id': stream_model.get_current_presenter() }
+            d   = { 'presenter_id': stream_model.get_current_presenter().stream }
             
             self.response.out.write( simplejson.dumps( d ) )
             

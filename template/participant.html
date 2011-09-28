@@ -116,7 +116,7 @@
 					{
 						stream	= s;
 						
-						$.postAJAX( { method: 'connected', stream_id: stream.streamId }, function(d)
+						$.postAJAX( { method: 'connected', stream_id: stream.streamId, email: '{{ email }}' }, function(d)
 						{
 							setInterval( pollForUpdate, 500 );
 							
