@@ -164,7 +164,7 @@
 					
 					$.postAJAX( { method: 'get_details', stream_id: s.streamId }, function(d)
 					{
-						$( 'a', li ).before( '<strong>Email: ' + d.email + '<br />Time: ' + d.time + '<br /></strong>' );
+						$( '#' + id + 'li a' ).before( '<strong>Email: ' + d.email + '<br />Time: ' + d.time + '<br /></strong>' );
 					});
 					
 					session.subscribe( s, id, props );
