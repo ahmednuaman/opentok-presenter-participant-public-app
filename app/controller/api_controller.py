@@ -64,6 +64,14 @@ class PresenterController(webapp.RequestHandler):
             
             stream_model.add_stream( self.request.get( 'stream_id' ), True, True )
             
+        elif req == 'get_details':
+            s   = stream_model.get_stream( self.request.get( 'stream_id' ) )
+            
+            p   = participant_model.get_participant( s.participant )
+            
+            if p is not None:
+                self.response.out.write( simplejson.dumps( { 'email': p.email, 'time': p.time } ) )
+        
         if req == 'connected' or req == 'update':
             get_all_streams( self )
             
@@ -77,9 +85,12 @@ class ParticipantController(webapp.RequestHandler):
         if req == 'connected':
             stream_model.add_stream( self.request.get( 'stream_id' ), False, False, self.request.get( 'email' ) )
             
-            d   = { 'presenter_id': stream_model.get_current_presenter().stream }
+            p   = stream_model.get_current_presenter()
             
-            self.response.out.write( simplejson.dumps( d ) )
+            if p is not None:
+                d   = { 'presenter_id': p.stream }
+                
+                self.response.out.write( simplejson.dumps( d ) )
             
         
     

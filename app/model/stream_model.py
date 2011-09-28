@@ -17,10 +17,16 @@ def add_stream(s, a=False, p=False, e=''):
     m.active    = a
     m.presenter = p
     
-    q   = participant_model.get_participant_by_email( e )
-    
-    if q is not None:
-        m.participant   = q
+    if len( e ) > 0:
+        q   = participant_model.get_participant_by_email( e )
+        
+        if q is not None:
+            m.participant   = q
+        
+        q2  = StreamModel().gql( 'WHERE participant = :1', q ).get()
+        
+        if q2 is not None:
+            q2.delete()
     
     if p:
         delete_current_presenter()

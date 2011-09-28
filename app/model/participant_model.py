@@ -32,3 +32,8 @@ def get_participants():
         
     
     return ps
+
+def get_participant(k):
+    q   = ParticipantModel().get( k.key() )
+    
+    return q

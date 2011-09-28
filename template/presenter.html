@@ -148,8 +148,6 @@
 					{
 						s	= streams[ x ];
 						
-						console.log(s);
-						
 						if ( s.streamId != stream.streamId )
 						{
 							addStream( s );
@@ -160,14 +158,24 @@
 				function addStream(s)
 				{
 					var id	= 'stream' + s.streamId;
+					var li	= $( '<li id="' + id + 'li"><div id="' + id + '"></div><br /><a href="javascript:selectStream(\'' + s.streamId + '\')" class="btn">Select</a></li>' );
 					
-					$( '#streams' ).append( '<li id="' + id + 'li"><div id="' + id + '"></div><br /><a href="javascript:selectStream(\'' + s.streamId + '\')" class="btn">Select</a></li>' );
+					$( '#streams' ).append( li );
+					
+					$.postAJAX( { method: 'get_details', stream_id: s.streamId }, function(d)
+					{
+						$( 'a', li ).before( '<strong>Email: ' + d.email + '<br />Time: ' + d.time + '<br /></strong>' );
+					});
 					
 					session.subscribe( s, id, props );
 				}
 				
 				function selectStream(id)
 				{
+					$( '#streams li a' ).removeClass( 'primary' );
+					
+					$( '#stream' + id + 'li a' ).addClass( 'primary' );
+					
 					$.postAJAX( { method: 'set_stream', stream_id: id }, function(d)
 					{
 						console.log(d);
